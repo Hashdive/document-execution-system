@@ -1,0 +1,387 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l25
+txna ApplicationArgs 0
+byte "set_agreement_registry"
+==
+bnz main_l24
+txna ApplicationArgs 0
+byte "add_executor"
+==
+bnz main_l23
+txna ApplicationArgs 0
+byte "add_executor_short"
+==
+bnz main_l22
+txna ApplicationArgs 0
+byte "remove_executor"
+==
+bnz main_l21
+txna ApplicationArgs 0
+byte "register_action_type"
+==
+bnz main_l20
+txna ApplicationArgs 0
+byte "check_agreement_executed"
+==
+bnz main_l19
+txna ApplicationArgs 0
+byte "execute_action"
+==
+bnz main_l9
+err
+main_l9:
+txn NumAppArgs
+int 3
+>=
+assert
+txn Sender
+byte "agreement_registry_id"
+app_global_get
+==
+txn Sender
+byte "admin"
+app_global_get
+==
+||
+byte "executor_"
+txn Sender
+extract 0 55
+concat
+app_global_get
+int 1
+==
+byte "ex_"
+txn Sender
+concat
+app_global_get
+int 1
+==
+||
+||
+assert
+int 0
+byte "agreement_id"
+txna ApplicationArgs 1
+btoi
+app_local_put
+int 0
+byte "action_type"
+txna ApplicationArgs 2
+app_local_put
+byte "action_type_"
+txna ApplicationArgs 2
+concat
+app_global_get
+byte ""
+!=
+assert
+int 0
+byte "action_handler"
+byte "action_type_"
+txna ApplicationArgs 2
+concat
+app_global_get
+app_local_put
+txn Sender
+byte "agreement_registry_id"
+app_global_get
+==
+!
+bnz main_l18
+main_l10:
+txn NumAppArgs
+int 3
+==
+bnz main_l17
+txn NumAppArgs
+int 4
+==
+bnz main_l16
+txn NumAppArgs
+int 5
+==
+bnz main_l15
+itxn_begin
+int appl
+itxn_field TypeEnum
+int 0
+byte "action_handler"
+app_local_get
+btoi
+itxn_field ApplicationID
+byte "process_agreement"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+txna ApplicationArgs 3
+itxn_field ApplicationArgs
+txna ApplicationArgs 4
+itxn_field ApplicationArgs
+txna ApplicationArgs 5
+itxn_field ApplicationArgs
+byte "Execute action for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+main_l14:
+byte "ACTION_EXECUTED:"
+txna ApplicationArgs 2
+concat
+log
+byte "AGREEMENT:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l15:
+itxn_begin
+int appl
+itxn_field TypeEnum
+int 0
+byte "action_handler"
+app_local_get
+btoi
+itxn_field ApplicationID
+byte "process_agreement"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+txna ApplicationArgs 3
+itxn_field ApplicationArgs
+txna ApplicationArgs 4
+itxn_field ApplicationArgs
+byte "Execute action for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+b main_l14
+main_l16:
+itxn_begin
+int appl
+itxn_field TypeEnum
+int 0
+byte "action_handler"
+app_local_get
+btoi
+itxn_field ApplicationID
+byte "process_agreement"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+txna ApplicationArgs 3
+itxn_field ApplicationArgs
+byte "Execute action for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+b main_l14
+main_l17:
+itxn_begin
+int appl
+itxn_field TypeEnum
+int 0
+byte "action_handler"
+app_local_get
+btoi
+itxn_field ApplicationID
+byte "process_agreement"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+byte "Execute action for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+b main_l14
+main_l18:
+itxn_begin
+int appl
+itxn_field TypeEnum
+byte "agreement_registry_id"
+app_global_get
+itxn_field ApplicationID
+byte "check_agreement_executed"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+byte "Verify agreement execution"
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+b main_l10
+main_l19:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+byte "executor_"
+txn Sender
+extract 0 55
+concat
+app_global_get
+int 1
+==
+byte "ex_"
+txn Sender
+concat
+app_global_get
+int 1
+==
+||
+||
+assert
+byte "AGREEMENT_EXECUTION_VERIFIED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l20:
+txn NumAppArgs
+int 3
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "action_type_"
+txna ApplicationArgs 1
+concat
+txna ApplicationArgs 2
+app_global_put
+byte "ACTION_TYPE_REGISTERED:"
+txna ApplicationArgs 1
+concat
+log
+byte "HANDLER:"
+txna ApplicationArgs 2
+concat
+log
+int 1
+return
+main_l21:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "executor_"
+txna ApplicationArgs 1
+extract 0 55
+concat
+int 0
+app_global_put
+byte "ex_"
+txna ApplicationArgs 1
+concat
+int 0
+app_global_put
+byte "EXECUTOR_REMOVED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l22:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "ex_"
+txna ApplicationArgs 1
+concat
+int 1
+app_global_put
+byte "EXECUTOR_ADDED_SHORT:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l23:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "executor_"
+txna ApplicationArgs 1
+extract 0 55
+concat
+int 1
+app_global_put
+byte "EXECUTOR_ADDED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l24:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "agreement_registry_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "AGREEMENT_REGISTRY_SET:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l25:
+byte "admin"
+txn Sender
+app_global_put
+byte "agreement_registry_id"
+int 0
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return

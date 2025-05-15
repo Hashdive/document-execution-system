@@ -1,0 +1,230 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l8
+txna ApplicationArgs 0
+byte "set_router"
+==
+bnz main_l7
+txna ApplicationArgs 0
+byte "register_contract"
+==
+bnz main_l6
+txna ApplicationArgs 0
+byte "process_agreement"
+==
+bnz main_l5
+err
+main_l5:
+txn NumAppArgs
+int 2
+>=
+assert
+txn Sender
+byte "router_id"
+app_global_get
+==
+txn Sender
+byte "admin"
+app_global_get
+==
+||
+assert
+int 0
+byte "agreement_id"
+txna ApplicationArgs 1
+app_local_put
+byte "approval_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+int 0
+byte "approval_program"
+byte "approval_"
+txna ApplicationArgs 1
+concat
+app_global_get
+app_local_put
+int 0
+byte "clear_program"
+byte "clear_"
+txna ApplicationArgs 1
+concat
+app_global_get
+app_local_put
+int 0
+byte "global_ints"
+byte "global_schema_"
+txna ApplicationArgs 1
+concat
+byte "_ints"
+concat
+app_global_get
+btoi
+app_local_put
+int 0
+byte "global_bytes"
+byte "global_schema_"
+txna ApplicationArgs 1
+concat
+byte "_bytes"
+concat
+app_global_get
+btoi
+app_local_put
+int 0
+byte "local_ints"
+byte "local_schema_"
+txna ApplicationArgs 1
+concat
+byte "_ints"
+concat
+app_global_get
+btoi
+app_local_put
+int 0
+byte "local_bytes"
+byte "local_schema_"
+txna ApplicationArgs 1
+concat
+byte "_bytes"
+concat
+app_global_get
+btoi
+app_local_put
+itxn_begin
+int appl
+itxn_field TypeEnum
+int 0
+byte "approval_program"
+app_local_get
+itxn_field ApprovalProgram
+int 0
+byte "clear_program"
+app_local_get
+itxn_field ClearStateProgram
+int 0
+byte "global_ints"
+app_local_get
+itxn_field GlobalNumUint
+int 0
+byte "global_bytes"
+app_local_get
+itxn_field GlobalNumByteSlice
+int 0
+byte "local_ints"
+app_local_get
+itxn_field LocalNumUint
+int 0
+byte "local_bytes"
+app_local_get
+itxn_field LocalNumByteSlice
+byte "Contract deployment for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+byte "CONTRACT_DEPLOYED:"
+txna ApplicationArgs 1
+concat
+log
+byte "APP_ID:"
+itxn CreatedApplicationID
+itob
+concat
+log
+int 1
+return
+main_l6:
+txn NumAppArgs
+int 8
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "approval_"
+txna ApplicationArgs 1
+concat
+txna ApplicationArgs 2
+app_global_put
+byte "clear_"
+txna ApplicationArgs 1
+concat
+txna ApplicationArgs 3
+app_global_put
+byte "global_schema_"
+txna ApplicationArgs 1
+concat
+byte "_ints"
+concat
+txna ApplicationArgs 4
+app_global_put
+byte "global_schema_"
+txna ApplicationArgs 1
+concat
+byte "_bytes"
+concat
+txna ApplicationArgs 5
+app_global_put
+byte "local_schema_"
+txna ApplicationArgs 1
+concat
+byte "_ints"
+concat
+txna ApplicationArgs 6
+app_global_put
+byte "local_schema_"
+txna ApplicationArgs 1
+concat
+byte "_bytes"
+concat
+txna ApplicationArgs 7
+app_global_put
+byte "CONTRACT_REGISTERED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l7:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "router_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "ROUTER_SET:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l8:
+byte "admin"
+txn Sender
+app_global_put
+byte "router_id"
+int 0
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return

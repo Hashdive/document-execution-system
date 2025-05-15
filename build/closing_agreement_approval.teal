@@ -1,0 +1,475 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l21
+txna ApplicationArgs 0
+byte "initialize"
+==
+bnz main_l20
+txna ApplicationArgs 0
+byte "add_milestone"
+==
+bnz main_l19
+txna ApplicationArgs 0
+byte "complete_milestone"
+==
+bnz main_l18
+txna ApplicationArgs 0
+byte "verify_signature"
+==
+bnz main_l10
+txna ApplicationArgs 0
+byte "execute_agreement"
+==
+bnz main_l9
+txna ApplicationArgs 0
+byte "cancel_agreement"
+==
+bnz main_l8
+err
+main_l8:
+txn NumAppArgs
+int 1
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "buyer"
+app_global_get
+==
+||
+txn Sender
+byte "seller"
+app_global_get
+==
+||
+assert
+byte "status"
+app_global_get
+byte "EXECUTED"
+==
+!
+assert
+byte "status"
+app_global_get
+byte "CANCELLED"
+==
+!
+assert
+byte "status"
+byte "CANCELLED"
+app_global_put
+byte "AGREEMENT_CANCELLED"
+log
+byte "BY:"
+txn Sender
+concat
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+int 1
+return
+main_l9:
+txn NumAppArgs
+int 1
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "buyer"
+app_global_get
+==
+||
+txn Sender
+byte "seller"
+app_global_get
+==
+||
+assert
+byte "status"
+app_global_get
+byte "PENDING"
+==
+assert
+byte "buyer_signed"
+app_global_get
+int 1
+==
+byte "seller_signed"
+app_global_get
+int 1
+==
+&&
+assert
+byte "current_milestone"
+app_global_get
+byte "milestone_count"
+app_global_get
+==
+assert
+byte "status"
+byte "EXECUTED"
+app_global_put
+byte "execution_date"
+global LatestTimestamp
+app_global_put
+byte "AGREEMENT_EXECUTED"
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+int 1
+return
+main_l10:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "buyer"
+app_global_get
+==
+||
+txn Sender
+byte "seller"
+app_global_get
+==
+||
+assert
+byte "status"
+app_global_get
+byte "PENDING"
+==
+assert
+txna ApplicationArgs 1
+byte "buyer"
+app_global_get
+==
+bnz main_l17
+txna ApplicationArgs 1
+byte "seller"
+app_global_get
+==
+bnz main_l16
+err
+main_l13:
+byte "buyer_signed"
+app_global_get
+int 1
+==
+byte "seller_signed"
+app_global_get
+int 1
+==
+&&
+byte "current_milestone"
+app_global_get
+byte "milestone_count"
+app_global_get
+==
+&&
+bnz main_l15
+main_l14:
+int 1
+return
+main_l15:
+byte "status"
+byte "EXECUTED"
+app_global_put
+byte "execution_date"
+global LatestTimestamp
+app_global_put
+byte "AGREEMENT_AUTO_EXECUTED"
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+b main_l14
+main_l16:
+byte "seller_signed"
+int 1
+app_global_put
+byte "seller_signed_at"
+global LatestTimestamp
+app_global_put
+byte "SELLER_SIGNATURE_VERIFIED"
+log
+b main_l13
+main_l17:
+byte "buyer_signed"
+int 1
+app_global_put
+byte "buyer_signed_at"
+global LatestTimestamp
+app_global_put
+byte "BUYER_SIGNATURE_VERIFIED"
+log
+b main_l13
+main_l18:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "buyer"
+app_global_get
+==
+||
+txn Sender
+byte "seller"
+app_global_get
+==
+||
+assert
+byte "status"
+app_global_get
+byte "PENDING"
+==
+assert
+int 0
+byte "index"
+txna ApplicationArgs 1
+btoi
+app_local_put
+int 0
+byte "index"
+app_local_get
+byte "milestone_count"
+app_global_get
+<
+assert
+int 0
+byte "index"
+app_local_get
+byte "current_milestone"
+app_global_get
+==
+assert
+int 0
+byte "milestone_data"
+byte "milestone_"
+txna ApplicationArgs 1
+concat
+app_global_get
+app_local_put
+int 0
+byte "milestone_data"
+app_local_get
+int 0
+byte "milestone_data"
+app_local_get
+len
+int 1
+-
+int 0
+byte "milestone_data"
+app_local_get
+len
+substring3
+byte "0"
+==
+assert
+byte "milestone_"
+txna ApplicationArgs 1
+concat
+int 0
+byte "milestone_data"
+app_local_get
+int 0
+int 0
+byte "milestone_data"
+app_local_get
+len
+int 1
+-
+substring3
+byte "1"
+concat
+app_global_put
+byte "milestone_completed_"
+txna ApplicationArgs 1
+concat
+global LatestTimestamp
+itob
+app_global_put
+byte "current_milestone"
+byte "current_milestone"
+app_global_get
+int 1
++
+app_global_put
+byte "MILESTONE_COMPLETED"
+log
+byte "INDEX:"
+txna ApplicationArgs 1
+concat
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+int 1
+return
+main_l19:
+txn NumAppArgs
+int 3
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "buyer"
+app_global_get
+==
+||
+txn Sender
+byte "seller"
+app_global_get
+==
+||
+assert
+byte "status"
+app_global_get
+byte "DRAFT"
+==
+byte "status"
+app_global_get
+byte "PENDING"
+==
+||
+assert
+int 0
+byte "next_index"
+byte "milestone_count"
+app_global_get
+app_local_put
+byte "milestone_"
+int 0
+byte "next_index"
+app_local_get
+itob
+concat
+txna ApplicationArgs 1
+byte "|"
+concat
+txna ApplicationArgs 2
+concat
+byte "|"
+concat
+byte "0"
+concat
+app_global_put
+byte "milestone_count"
+byte "milestone_count"
+app_global_get
+int 1
++
+app_global_put
+byte "MILESTONE_ADDED"
+log
+byte "INDEX:"
+int 0
+byte "next_index"
+app_local_get
+itob
+concat
+log
+byte "TITLE:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l20:
+txn NumAppArgs
+int 5
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "status"
+app_global_get
+byte "DRAFT"
+==
+assert
+byte "buyer"
+txna ApplicationArgs 1
+app_global_put
+byte "seller"
+txna ApplicationArgs 2
+app_global_put
+byte "amount"
+txna ApplicationArgs 3
+btoi
+app_global_put
+byte "document_hash"
+txna ApplicationArgs 4
+app_global_put
+byte "status"
+byte "PENDING"
+app_global_put
+byte "AGREEMENT_INITIALIZED"
+log
+byte "BUYER:"
+txna ApplicationArgs 1
+concat
+log
+byte "SELLER:"
+txna ApplicationArgs 2
+concat
+log
+int 1
+return
+main_l21:
+byte "admin"
+txn Sender
+app_global_put
+byte "status"
+byte "DRAFT"
+app_global_put
+byte "milestone_count"
+int 0
+app_global_put
+byte "current_milestone"
+int 0
+app_global_put
+byte "buyer_signed"
+int 0
+app_global_put
+byte "seller_signed"
+int 0
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return

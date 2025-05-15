@@ -1,0 +1,296 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l14
+txna ApplicationArgs 0
+byte "register_identity"
+==
+bnz main_l13
+txna ApplicationArgs 0
+byte "verify_identity"
+==
+bnz main_l12
+txna ApplicationArgs 0
+byte "update_claim"
+==
+bnz main_l11
+txna ApplicationArgs 0
+byte "revoke_identity"
+==
+bnz main_l10
+txna ApplicationArgs 0
+byte "add_verifier"
+==
+bnz main_l9
+txna ApplicationArgs 0
+byte "remove_verifier"
+==
+bnz main_l8
+err
+main_l8:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "verifier_"
+txna ApplicationArgs 1
+concat
+int 0
+app_global_put
+byte "VERIFIER_REMOVED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l9:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "verifier_"
+txna ApplicationArgs 1
+concat
+int 1
+app_global_put
+byte "VERIFIER_ADDED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l10:
+txn NumAppArgs
+int 4
+==
+assert
+txn Sender
+txna ApplicationArgs 1
+==
+byte "verifier_"
+txn Sender
+concat
+app_global_get
+||
+txn Sender
+byte "admin"
+app_global_get
+==
+||
+assert
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+byte "_"
+concat
+txna ApplicationArgs 3
+concat
+app_local_del
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+byte "_verified"
+concat
+app_local_del
+byte "id_"
+txna ApplicationArgs 2
+byte ":"
+txna ApplicationArgs 3
+concat
+concat
+concat
+app_global_del
+byte "IDENTITY_REVOKED:"
+txna ApplicationArgs 1
+concat
+log
+byte "CLAIM_TYPE:"
+txna ApplicationArgs 2
+concat
+log
+byte "REVOKED_BY:"
+txn Sender
+concat
+log
+int 1
+return
+main_l11:
+txn NumAppArgs
+int 4
+==
+assert
+int 0
+txna ApplicationArgs 1
+byte "_"
+concat
+txna ApplicationArgs 2
+concat
+app_local_get
+int 1
+==
+assert
+int 0
+txna ApplicationArgs 1
+byte "_"
+concat
+txna ApplicationArgs 2
+concat
+app_local_del
+byte "id_"
+txna ApplicationArgs 1
+byte ":"
+txna ApplicationArgs 2
+concat
+concat
+concat
+app_global_del
+int 0
+txna ApplicationArgs 1
+byte "_"
+concat
+txna ApplicationArgs 3
+concat
+int 1
+app_local_put
+int 0
+txna ApplicationArgs 1
+byte "_verified"
+concat
+int 0
+app_local_put
+byte "id_"
+txna ApplicationArgs 1
+byte ":"
+txna ApplicationArgs 3
+concat
+concat
+concat
+txn Sender
+app_global_put
+byte "IDENTITY_UPDATED:"
+txn Sender
+concat
+log
+byte "CLAIM_TYPE:"
+txna ApplicationArgs 1
+concat
+log
+byte "OLD_VALUE:"
+txna ApplicationArgs 2
+concat
+log
+byte "NEW_VALUE:"
+txna ApplicationArgs 3
+concat
+log
+int 1
+return
+main_l12:
+txn NumAppArgs
+int 3
+==
+assert
+byte "verifier_"
+txn Sender
+concat
+app_global_get
+assert
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+byte "_verified"
+concat
+int 1
+app_local_put
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+byte "_verified_at"
+concat
+global LatestTimestamp
+app_local_put
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+byte "_verified_by"
+concat
+txn Sender
+app_local_put
+byte "IDENTITY_VERIFIED:"
+txna ApplicationArgs 1
+concat
+log
+byte "CLAIM_TYPE:"
+txna ApplicationArgs 2
+concat
+log
+byte "VERIFIER:"
+txn Sender
+concat
+log
+int 1
+return
+main_l13:
+txn NumAppArgs
+int 3
+==
+assert
+int 0
+txna ApplicationArgs 1
+byte "_"
+concat
+txna ApplicationArgs 2
+concat
+int 1
+app_local_put
+int 0
+txna ApplicationArgs 1
+byte "_verified"
+concat
+int 0
+app_local_put
+int 0
+txna ApplicationArgs 1
+byte "_registered_at"
+concat
+global LatestTimestamp
+app_local_put
+byte "id_"
+txna ApplicationArgs 1
+byte ":"
+txna ApplicationArgs 2
+concat
+concat
+concat
+txn Sender
+app_global_put
+byte "IDENTITY_REGISTERED:"
+txn Sender
+concat
+log
+byte "CLAIM_TYPE:"
+txna ApplicationArgs 1
+concat
+log
+byte "CLAIM_VALUE:"
+txna ApplicationArgs 2
+concat
+log
+int 1
+return
+main_l14:
+byte "admin"
+txn Sender
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return

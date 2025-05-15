@@ -1,9 +1,17 @@
 import os
 import base64
+import sys
 from algosdk import account, mnemonic
 from algosdk.v2client import algod
-from document_client_sdk import DocumentExecutionClient
-from docusign_verifier import DocuSignVerifier
+
+# Add parent directory to the Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+# Import from src directory
+from src.document_client_sdk import DocumentExecutionClient
+from src.docusign_verifier import DocuSignVerifier
 
 """
 Example Client Application for Document Execution System

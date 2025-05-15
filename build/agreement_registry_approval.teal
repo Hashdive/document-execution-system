@@ -1,0 +1,943 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l54
+txna ApplicationArgs 0
+byte "create_agreement"
+==
+bnz main_l42
+txna ApplicationArgs 0
+byte "add_signer"
+==
+bnz main_l41
+txna ApplicationArgs 0
+byte "add_metadata"
+==
+bnz main_l40
+txna ApplicationArgs 0
+byte "mark_signed"
+==
+bnz main_l39
+txna ApplicationArgs 0
+byte "execute_agreement"
+==
+bnz main_l13
+txna ApplicationArgs 0
+byte "add_verifier"
+==
+bnz main_l12
+txna ApplicationArgs 0
+byte "remove_verifier"
+==
+bnz main_l11
+txna ApplicationArgs 0
+byte "set_execution_router"
+==
+bnz main_l10
+err
+main_l10:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "execution_router_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "EXECUTION_ROUTER_SET:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l11:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "verifier_"
+txna ApplicationArgs 1
+concat
+int 0
+app_global_put
+byte "VERIFIER_REMOVED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l12:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "verifier_"
+txna ApplicationArgs 1
+concat
+int 1
+app_global_put
+byte "VERIFIER_ADDED:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l13:
+txn NumAppArgs
+int 2
+==
+assert
+int 0
+byte "agreement_id"
+txna ApplicationArgs 1
+app_local_put
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+int 0
+byte "agreement_data"
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+app_local_put
+int 0
+byte "agreement_data"
+app_local_get
+extract 64 1
+byte "0"
+==
+assert
+int 0
+byte "total_signers"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_count"
+concat
+concat
+app_global_get
+app_local_put
+int 0
+byte "signed_count"
+int 0
+app_local_put
+int 0
+byte "all_signed"
+int 1
+app_local_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_1"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l36
+main_l14:
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_2"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l33
+main_l15:
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_3"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l30
+main_l16:
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_4"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l27
+main_l17:
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_5"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l24
+main_l18:
+int 0
+byte "all_signed"
+app_local_get
+int 1
+==
+assert
+int 0
+byte "signed_count"
+app_local_get
+int 0
+byte "total_signers"
+app_local_get
+==
+assert
+int 0
+byte "signer_count"
+int 0
+byte "total_signers"
+app_local_get
+app_local_put
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+int 0
+byte "agreement_data"
+app_local_get
+extract 0 64
+byte "1"
+concat
+global LatestTimestamp
+itob
+concat
+app_global_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_executed_at"
+concat
+concat
+global LatestTimestamp
+itob
+app_global_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_executed_by"
+concat
+concat
+txn Sender
+app_global_put
+byte "execution_router_id"
+app_global_get
+int 0
+!=
+bnz main_l20
+main_l19:
+byte "EXECUTED:"
+txna ApplicationArgs 1
+concat
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+byte "SIGNER_COUNT:"
+int 0
+byte "signer_count"
+app_local_get
+itob
+concat
+log
+int 1
+return
+main_l20:
+itxn_begin
+int appl
+itxn_field TypeEnum
+byte "execution_router_id"
+app_global_get
+itxn_field ApplicationID
+byte "execute_action"
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+byte "meta_"
+txna ApplicationArgs 1
+byte "_action_type"
+concat
+concat
+app_global_get
+byte ""
+!=
+bnz main_l23
+byte "default"
+main_l22:
+itxn_field ApplicationArgs
+byte "Agreement executed - calling router"
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+byte "EXECUTION_ROUTER_CALLED"
+log
+b main_l19
+main_l23:
+byte "meta_"
+txna ApplicationArgs 1
+byte "_action_type"
+concat
+concat
+app_global_get
+b main_l22
+main_l24:
+int 0
+byte "current_signer"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_5"
+concat
+concat
+app_global_get
+app_local_put
+byte "signer_"
+txna ApplicationArgs 1
+int 0
+byte "current_signer"
+app_local_get
+concat
+concat
+app_global_get
+byte "1"
+==
+bnz main_l26
+int 0
+byte "all_signed"
+int 0
+app_local_put
+b main_l18
+main_l26:
+int 0
+byte "signed_count"
+int 0
+byte "signed_count"
+app_local_get
+int 1
++
+app_local_put
+b main_l18
+main_l27:
+int 0
+byte "current_signer"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_4"
+concat
+concat
+app_global_get
+app_local_put
+byte "signer_"
+txna ApplicationArgs 1
+int 0
+byte "current_signer"
+app_local_get
+concat
+concat
+app_global_get
+byte "1"
+==
+bnz main_l29
+int 0
+byte "all_signed"
+int 0
+app_local_put
+b main_l17
+main_l29:
+int 0
+byte "signed_count"
+int 0
+byte "signed_count"
+app_local_get
+int 1
++
+app_local_put
+b main_l17
+main_l30:
+int 0
+byte "current_signer"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_3"
+concat
+concat
+app_global_get
+app_local_put
+byte "signer_"
+txna ApplicationArgs 1
+int 0
+byte "current_signer"
+app_local_get
+concat
+concat
+app_global_get
+byte "1"
+==
+bnz main_l32
+int 0
+byte "all_signed"
+int 0
+app_local_put
+b main_l16
+main_l32:
+int 0
+byte "signed_count"
+int 0
+byte "signed_count"
+app_local_get
+int 1
++
+app_local_put
+b main_l16
+main_l33:
+int 0
+byte "current_signer"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_2"
+concat
+concat
+app_global_get
+app_local_put
+byte "signer_"
+txna ApplicationArgs 1
+int 0
+byte "current_signer"
+app_local_get
+concat
+concat
+app_global_get
+byte "1"
+==
+bnz main_l35
+int 0
+byte "all_signed"
+int 0
+app_local_put
+b main_l15
+main_l35:
+int 0
+byte "signed_count"
+int 0
+byte "signed_count"
+app_local_get
+int 1
++
+app_local_put
+b main_l15
+main_l36:
+int 0
+byte "current_signer"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_1"
+concat
+concat
+app_global_get
+app_local_put
+byte "signer_"
+txna ApplicationArgs 1
+int 0
+byte "current_signer"
+app_local_get
+concat
+concat
+app_global_get
+byte "1"
+==
+bnz main_l38
+int 0
+byte "all_signed"
+int 0
+app_local_put
+b main_l14
+main_l38:
+int 0
+byte "signed_count"
+int 0
+byte "signed_count"
+app_local_get
+int 1
++
+app_local_put
+b main_l14
+main_l39:
+txn NumAppArgs
+int 3
+==
+assert
+byte "verifier_"
+txn Sender
+concat
+app_global_get
+assert
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+byte "signer_"
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+concat
+app_global_get
+byte ""
+!=
+assert
+byte "signer_"
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+concat
+byte "1"
+app_global_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signed_at_"
+txna ApplicationArgs 2
+concat
+concat
+concat
+global LatestTimestamp
+itob
+app_global_put
+byte "SIGNATURE:"
+txna ApplicationArgs 1
+byte ":"
+txna ApplicationArgs 2
+concat
+concat
+concat
+log
+byte "TIMESTAMP:"
+global LatestTimestamp
+itob
+concat
+log
+int 1
+return
+main_l40:
+txn NumAppArgs
+int 4
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "meta_"
+txna ApplicationArgs 1
+byte "_creator"
+concat
+concat
+app_global_get
+==
+||
+assert
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+byte "meta_"
+txna ApplicationArgs 1
+byte "_"
+txna ApplicationArgs 2
+concat
+concat
+concat
+txna ApplicationArgs 3
+app_global_put
+byte "METADATA_ADDED:"
+txna ApplicationArgs 1
+byte ":"
+txna ApplicationArgs 2
+concat
+concat
+concat
+log
+int 1
+return
+main_l41:
+txn NumAppArgs
+int 3
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+txn Sender
+byte "meta_"
+txna ApplicationArgs 1
+byte "_creator"
+concat
+concat
+app_global_get
+==
+||
+assert
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+byte "agreement_"
+txna ApplicationArgs 1
+concat
+app_global_get
+extract 64 1
+byte "0"
+==
+assert
+byte "signer_"
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+concat
+app_global_get
+byte ""
+==
+assert
+int 0
+byte "current_count"
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_count"
+concat
+concat
+app_global_get
+app_local_put
+int 0
+byte "current_count"
+app_local_get
+int 5
+<
+assert
+int 0
+byte "new_index"
+int 0
+byte "current_count"
+app_local_get
+int 1
++
+app_local_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_"
+int 0
+byte "new_index"
+app_local_get
+itob
+concat
+concat
+concat
+txna ApplicationArgs 2
+app_global_put
+byte "signer_"
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+concat
+byte "0"
+app_global_put
+byte "meta_"
+txna ApplicationArgs 1
+byte "_signer_count"
+concat
+concat
+int 0
+byte "new_index"
+app_local_get
+app_global_put
+byte "SIGNER_ADDED:"
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+concat
+log
+int 1
+return
+main_l42:
+txn NumAppArgs
+int 4
+>=
+assert
+byte "temp_id"
+byte "agreement_counter"
+app_global_get
+app_global_put
+byte "agreement_counter"
+byte "agreement_counter"
+app_global_get
+int 1
++
+app_global_put
+int 0
+byte "temp_id"
+byte "agreement_counter"
+app_global_get
+app_local_put
+byte "agreement_"
+byte "agreement_counter"
+app_global_get
+itob
+concat
+txna ApplicationArgs 1
+txna ApplicationArgs 2
+concat
+global LatestTimestamp
+itob
+concat
+byte "0"
+concat
+app_global_put
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_1"
+concat
+concat
+txna ApplicationArgs 3
+app_global_put
+byte "signer_"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 3
+concat
+concat
+byte "0"
+app_global_put
+byte "SIGNER_ADDED:"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 3
+concat
+concat
+log
+txn NumAppArgs
+int 5
+>=
+bnz main_l53
+main_l43:
+txn NumAppArgs
+int 6
+>=
+bnz main_l52
+main_l44:
+txn NumAppArgs
+int 7
+>=
+bnz main_l51
+main_l45:
+txn NumAppArgs
+int 8
+>=
+bnz main_l50
+main_l46:
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_count"
+concat
+concat
+txn NumAppArgs
+int 3
+-
+int 5
+>
+bnz main_l49
+txn NumAppArgs
+int 3
+-
+main_l48:
+app_global_put
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_creator"
+concat
+concat
+txn Sender
+app_global_put
+byte "AGREEMENT_CREATED:"
+byte "agreement_counter"
+app_global_get
+itob
+concat
+log
+byte "PROVIDER:"
+txna ApplicationArgs 2
+concat
+log
+int 1
+return
+main_l49:
+int 5
+b main_l48
+main_l50:
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_5"
+concat
+concat
+txna ApplicationArgs 7
+app_global_put
+byte "signer_"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 7
+concat
+concat
+byte "0"
+app_global_put
+byte "SIGNER_ADDED:"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 7
+concat
+concat
+log
+b main_l46
+main_l51:
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_4"
+concat
+concat
+txna ApplicationArgs 6
+app_global_put
+byte "signer_"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 6
+concat
+concat
+byte "0"
+app_global_put
+byte "SIGNER_ADDED:"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 6
+concat
+concat
+log
+b main_l45
+main_l52:
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_3"
+concat
+concat
+txna ApplicationArgs 5
+app_global_put
+byte "signer_"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 5
+concat
+concat
+byte "0"
+app_global_put
+byte "SIGNER_ADDED:"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 5
+concat
+concat
+log
+b main_l44
+main_l53:
+byte "meta_"
+byte "agreement_counter"
+app_global_get
+itob
+byte "_signer_2"
+concat
+concat
+txna ApplicationArgs 4
+app_global_put
+byte "signer_"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 4
+concat
+concat
+byte "0"
+app_global_put
+byte "SIGNER_ADDED:"
+byte "agreement_counter"
+app_global_get
+itob
+txna ApplicationArgs 4
+concat
+concat
+log
+b main_l43
+main_l54:
+byte "admin"
+txn Sender
+app_global_put
+byte "agreement_counter"
+int 0
+app_global_put
+byte "execution_router_id"
+int 0
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return

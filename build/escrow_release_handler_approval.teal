@@ -1,0 +1,158 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l11
+txna ApplicationArgs 0
+byte "set_router"
+==
+bnz main_l10
+txna ApplicationArgs 0
+byte "register_escrow"
+==
+bnz main_l9
+txna ApplicationArgs 0
+byte "process_agreement"
+==
+bnz main_l5
+err
+main_l5:
+txn NumAppArgs
+int 2
+>=
+assert
+txn Sender
+byte "router_id"
+app_global_get
+==
+txn Sender
+byte "admin"
+app_global_get
+==
+||
+assert
+int 0
+byte "agreement_id"
+txna ApplicationArgs 1
+app_local_put
+byte "escrow_"
+txna ApplicationArgs 1
+concat
+app_global_get
+byte ""
+!=
+assert
+int 0
+byte "escrow_address"
+byte "escrow_"
+txna ApplicationArgs 1
+concat
+app_global_get
+app_local_put
+int 0
+byte "recipient"
+txn NumAppArgs
+int 2
+>
+bnz main_l8
+txn Sender
+main_l7:
+app_local_put
+itxn_begin
+int pay
+itxn_field TypeEnum
+int 0
+byte "escrow_address"
+app_local_get
+itxn_field Sender
+int 0
+byte "recipient"
+app_local_get
+itxn_field Receiver
+int 1000000
+itxn_field Amount
+byte "Escrow release for agreement:"
+txna ApplicationArgs 1
+concat
+itxn_field Note
+int 0
+itxn_field Fee
+itxn_submit
+byte "ESCROW_RELEASED:"
+txna ApplicationArgs 1
+concat
+log
+byte "AMOUNT:"
+int 1000000
+itob
+concat
+log
+byte "RECIPIENT:"
+int 0
+byte "recipient"
+app_local_get
+concat
+log
+int 1
+return
+main_l8:
+txna ApplicationArgs 2
+b main_l7
+main_l9:
+txn NumAppArgs
+int 3
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "escrow_"
+txna ApplicationArgs 1
+concat
+txna ApplicationArgs 2
+app_global_put
+byte "ESCROW_REGISTERED:"
+txna ApplicationArgs 1
+concat
+log
+byte "ESCROW_ADDRESS:"
+txna ApplicationArgs 2
+concat
+log
+int 1
+return
+main_l10:
+txn NumAppArgs
+int 2
+==
+assert
+txn Sender
+byte "admin"
+app_global_get
+==
+assert
+byte "router_id"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "ROUTER_SET:"
+txna ApplicationArgs 1
+concat
+log
+int 1
+return
+main_l11:
+byte "admin"
+txn Sender
+app_global_put
+byte "router_id"
+int 0
+app_global_put
+byte "INIT:admin="
+log
+txn Sender
+log
+int 1
+return
